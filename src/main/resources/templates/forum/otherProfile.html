@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <title>Profile - [[${profileUser.username}]]</title>
+</head>
+<body>
+<header class="navbar">
+    <div class="brand">
+        <img src="/logo.png" alt="Logo" class="logo"> <!-- Logo -->
+    </div>
+    <nav>
+        <ul class="nav-list">
+            <li class="nav-item"><a href="/forum/forum">Home</a></li>
+            <li class="nav-item"><a href="/forum/devblog">DevBlog</a></li>
+            <li class="nav-item"><a href="/forum/services">Services</a></li>
+        </ul>
+    </nav>
+    <div class="profile">
+        <a href="/forum/profile" class="username" th:text="${currentUser.username}">Username</a>
+        <img th:if="${currentUser.avatar != null}" th:src="@{/forum/avatar/{id}(id=${currentUser.id})}" alt="Avatar" class="avatar">
+        <img th:if="${currentUser.avatar == null}" th:src="@{/avatar.png}" alt="Avatar" class="avatar">
+    </div>
+</header>
+
+<div class="container">
+    <h1 th:text="${profileUser.username} + ' Profile'"></h1>
+    <div class="profile-info">
+        <div class="profile-data">
+            <div class="profile-details">
+                <p class="purple">
+                    <span class="icon">&#127380;</span> <!-- Icon for ID -->
+                    Id: <span th:text="${profileUser.id}"></span>
+                </p>
+            </div>
+            <div class="profile-details">
+                <p class="purple">
+                    <span class="icon">&#128101;</span> <!-- Icon for Username -->
+                    Username: <span th:text="${profileUser.username}"></span>
+                </p>
+            </div>
+            <div class="profile-details">
+                <p class="purple">
+                    <span class="icon">&#128197;</span> <!-- Icon for Registration Date -->
+                    Registration Date: <span th:text="${profileUser.createdAt}"></span>
+                </p>
+            </div>
+            <div class="profile-details">
+                <p class="purple">
+                    <span class="icon">&#128172;</span> <!-- Icon for Total Posts -->
+                    Total Posts: <span th:text="${totalPosts}"></span>
+                </p>
+            </div>
+            <div class="profile-details">
+                <p class="purple">
+                    <span class="icon">&#128214;</span> <!-- Icon for Status -->
+                    Status: <span th:text="${profileUser.status}"></span>
+                </p>
+            </div>
+        </div>
+        <div class="profile-avatar">
+            <img th:if="${profileUser.avatar != null}"
+                 th:src="@{/forum/avatar/{id}(id=${profileUser.id})}"
+                 alt="Avatar" class="avatar-large">
+            <img th:if="${profileUser.avatar == null}"
+                 th:src="@{/avatar.png}"
+                 alt="Avatar" class="avatar-large">
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    <p>&copy; Dark Quarter Corporation | 2024 All rights reserved.</p>
+</footer>
+</body>
+</html>

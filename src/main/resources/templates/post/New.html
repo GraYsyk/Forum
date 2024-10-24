@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create New Post</title>
+  <link rel="stylesheet" th:href="@{/style.css}">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    .uploaded-files {
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid #a85dff;
+      border-radius: 5px;
+      background-color: #ffffff;
+    }
+
+    .file-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .file-item {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      border: 2px dashed rgba(255, 255, 255, 0.7);
+      border-radius: 5px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+    }
+
+    .file-item img,
+    .file-item video {
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    .add-file {
+      width: 100px;
+      height: 100px;
+      border: 2px dashed rgba(255, 255, 255, 0.7);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .add-file:hover {
+      background-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .add-file:after {
+      content: '+';
+      font-size: 24px;
+      color: white;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.5);
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+  <script>
+    function updateFileList(event) {
+      const fileList = document.getElementById('file-list');
+      const files = event.target.files;
+
+      fileList.innerHTML = ''; // Очищаем предыдущий список
+
+      for (let i = 0; i < files.length; i++) {
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+
+        const fileURL = URL.createObjectURL(files[i]);
+        if (files[i].type.startsWith('image/')) {
+          const img = document.createElement('img');
+          img.src = fileURL;
+          fileItem.appendChild(img);
+        } else if (files[i].type.startsWith('video/')) {
+          const video = document.createElement('video');
+          video.src = fileURL;
+          video.controls = true;
+          fileItem.appendChild(video);
+        }
+
+        fileList.appendChild(fileItem); // Добавляем элемент в список
+      }
+    }
+
+    function addFileInput() {
+      const input = document.getElementById('media');
+      input.click(); // Открываем окно выбора файла
+    }
+  </script>
+</head>
+<body>
+
+<!-- NavigationBar -->
+<header class="navbar">
+  <div class="brand">
+    <a th:href="@{/forum/forum}" class="logo">
+      <img th:src="@{/logo.png}" alt="Logo" class="logo">
+    </a>
+  </div>
+  <ul class="nav-list">
+    <li class="nav-item"><a th:href="@{/forum/forum}">Home</a></li>
+    <li class="nav-item"><a th:href="@{/post}">Posts</a></li>
+    <li class="nav-item"><a th:href="@{/about}">About</a></li>
+    <li class="nav-item"><a th:href="@{/contact}">Contact</a></li>
+  </ul>
+  <div class="profile">
+    <a href="/forum/profile" class="username" th:text="${user.username}">Username</a>
+    <img th:if="${user.avatar != null}" th:src="@{/forum/avatar/{id}(id=${user.id})}" alt="Avatar" class="avatar">
+    <img th:if="${user.avatar == null}" th:src="@{/avatar.png}" alt="Avatar" class="avatar">
+  </div>
+</header>
+
+<!-- Контейнер для создания нового поста -->
+<div class="container">
+  <h1>Create New Post</h1>
+
+  <div th:if="${error}" class="error-message" style="color: red; margin-bottom: 10px;">
+    <p th:text="${error}"></p>
+  </div>
+
+  <form th:action="@{/post/new}" th:method="POST" enctype="multipart/form-data" class="new-post-form">
+    <div class="form-group">
+      <label for="title">Title:</label>
+      <input type="text" id="title" name="title" class="form-control" placeholder="Enter the title" required>
+    </div>
+
+    <div class="form-group">
+      <label for="description">Description:</label>
+      <textarea id="description" name="descr" class="form-control" rows="3" placeholder="Enter a brief description"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="content">Post Content:</label>
+      <textarea id="content" name="content" class="form-control" rows="10" placeholder="Write your post here" required></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="media">Upload Media (images/videos):</label>
+      <input type="file" id="media" name="media" multiple accept="image/*,video/*" onchange="updateFileList(event)" style="display: none;">
+      <div class="add-file" onclick="addFileInput()"></div>
+    </div>
+
+    <div class="uploaded-files">
+      <h3>Uploaded Files:</h3>
+      <div class="file-list" id="file-list"></div>
+    </div>
+
+    <button type="button" onclick="window.history.back()" class="go-back-button">Go back</button>
+    <button type="submit" class="post-button">Post!</button>
+  </form>
+</div>
+
+<footer class="footer">
+  <p>&copy; 2024 Dark Quarter Corporation. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

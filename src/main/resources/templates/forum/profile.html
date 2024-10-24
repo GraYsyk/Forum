@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <title>Profile - [[${user.username}]]</title>
+</head>
+<body>
+<header class="navbar">
+    <div class="brand">
+        <img src="/logo.png" alt="Logo" class="logo"> <!-- Logo -->
+    </div>
+    <nav>
+        <ul class="nav-list">
+            <li class="nav-item"><a href="/forum/forum">Home</a></li>
+            <li class="nav-item"><a href="/forum/devblog">DevBlog</a></li>
+            <li class="nav-item"><a href="/forum/services">Services</a></li>
+        </ul>
+    </nav>
+    <div class="profile">
+        <a href="#" class="username" th:text="${user.username}"></a> <!-- Username -->
+        <img th:if="${user.avatar != null}"
+             th:src="@{/forum/avatar/{id}(id=${user.id})}"
+             alt="Avatar" class="avatar">
+        <img th:if="${user.avatar == null}"
+             th:src="@{/avatar.png}"
+             alt="Avatar" class="avatar">
+    </div>
+</header>
+
+<div class="container">
+    <h1 th:text="${user.username} + ' Profile'"></h1>
+    <div class="profile-info">
+        <div class="profile-data">
+            <!-- ID -->
+            <div class="profile-details">
+                <p class="purple">
+                    <span class="icon">&#127380;</span> <!-- Icon for ID -->
+                    Id: <span th:text="${user.id}"></span>
+                </p>
+            </div>
+            <!-- Username -->
+            <div class="profile-details">
+                <p class="purple">
+                    <span class="icon">&#128101;</span> <!-- Icon for Username -->
+                    Username: <span th:text="${user.username}"></span>
+                </p>
+            </div>
+            <!-- Registration Date -->
+            <div class="profile-details">
+                <p class="purple">
+                    <span class="icon">&#128197;</span> <!-- Icon for Calendar -->
+                    Registration Date: <span th:text="${#dates.format(user.createdAt, 'dd MMM yyyy')}"></span>
+                </p>
+            </div>
+            <!-- Post Count -->
+            <div class="profile-details">
+                <p class="purple">
+                    <span class="icon">&#128221;</span> <!-- Icon for Posts -->
+                    Posts: <span th:text="${posts}"></span>
+                </p>
+            </div>
+            <!-- Status -->
+            <div class="profile-details">
+                <p class="purple">
+                    <span class="icon">&#128276;</span> <!-- Icon for Status -->
+                    Status: <span th:text="${user.status}"></span> <!-- Assuming status is a string, e.g., "Active", "Banned" -->
+                </p>
+            </div>
+            <!-- Log out button -->
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <button type="submit" class="logout-button">Log out</button>
+            </form>
+        </div>
+        <div class="profile-avatar">
+            <img th:if="${user.avatar != null}"
+                 th:src="@{/forum/avatar/{id}(id=${user.id})}"
+                 alt="Avatar" class="avatar-large">
+            <img th:if="${user.avatar == null}"
+                 th:src="@{/avatar.png}"
+                 alt="Avatar" class="avatar-large">
+            <h3>Upload New Avatar</h3>
+            <form th:action="@{/forum/upload-avatar/{id}(id=${user.id})}" method="post" enctype="multipart/form-data" class="upload-avatar">
+                <input type="hidden" name="id" th:value="${user.id}">
+                <input type="file" name="file" accept="image/*" required>
+                <button type="submit">Upload</button>
+            </form>
+
+            <!-- Success or error messages -->
+            <div th:if="${param.success}" class="success-message">
+                Avatar uploaded successfully!
+            </div>
+            <div th:if="${param.error}" class="error-message">
+                Error uploading avatar. Please try again.
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    <p>&copy; Dark Quarter Corporation | 2024 All rights reserved.</p>
+</footer>
+</body>
+</html>

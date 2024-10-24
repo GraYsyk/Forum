@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:ital@1&display=swap" rel="stylesheet">
+</head>
+<body>
+<header>
+    <header class="navbar">
+        <div class="brand">
+            <img src="/logo.png" alt="Logo" class="logo">
+        </div>
+        <nav>
+            <ul class="nav-list">
+                <li class="nav-item"><a href="/forum/forum">Home</a></li>
+                <li class="nav-item"><a href="#">Dev-Blog</a></li>
+                <li class="nav-item"><a href="#">Services</a></li>
+            </ul>
+        </nav>
+        <div class="profile">
+            <a href="/forum/profile" class="username" th:text="${user.username}">Username</a>
+            <img th:if="${user.avatar != null}" th:src="@{/forum/avatar/{id}(id=${user.id})}" alt="Avatar" class="avatar">
+            <img th:if="${user.avatar == null}" th:src="@{/avatar.png}" alt="Avatar" class="avatar">
+        </div>
+    </header>
+
+    <div class="search-box">
+        <div>
+            <form th:action="@{/forum/forum}" method="get">
+                <select name="searchType">
+                    <option value="Everything">Everything</option>
+                    <option value="Titles">Titles</option>
+                </select>
+                <input type="text" name="search" placeholder="search ..." th:value="${param.search}">
+                <button type="submit"><i class="fa fa-search"></i></button>
+            </form>
+        </div>
+        <a href="/post/new" class="new-post-button">New Post</a>
+    </div>
+</header>
+
+<div class="container">
+    <div class="subforum">
+        <div class="subforum-title">
+            <h1>Forum</h1>
+        </div>
+
+        <div th:each="post : ${posts.content}" class="post-container">
+            <div class="subforum-row">
+                <div class="subforum-icon subforum-column center">
+                    <img th:if="${post.owner.avatar != null}" th:src="@{/forum/avatar/{id}(id=${post.owner.id})}" alt="Owner Avatar" class="post-avatar">
+                    <img th:if="${post.owner.avatar == null}" th:src="@{/avatar.png}" alt="Owner Avatar" class="post-avatar">
+                </div>
+                <div class="subforum-description subforum-column">
+                    <h4>
+                        <a th:href="@{/post/{id}(id=${post.id})}" th:text="${post.title}">Post Title</a>
+                    </h4>
+                    <p th:text="${post.descr}">Post Content</p>
+                </div>
+                <div class="subforum-stats subforum-column center">
+                    <span th:text="${post.comment.size()} + ' Comments'">0 Comments</span>
+                </div>
+                <div class="subforum-info subforum-column">
+                    <b>Last post by <a th:href="@{/forum/profile/{id}(id=${post.owner.id})}" th:text="${post.owner.username}">Author</a></b>
+                    <br>on <small th:text="${#dates.format(post.creationDate, 'dd MMM yyyy')}">12 Dec 2020</small>
+                </div>
+            </div>
+            <hr class="subforum-divider">
+        </div>
+
+        <div class="pagination">
+            <a th:href="@{/forum(page=${posts.number - 1}, size=${posts.size}, search=${param.search})}"
+               th:if="${posts.hasPrevious()}">&laquo; Previous</a>
+            <span th:text="${posts.number + 1} + ' of ' + ${posts.totalPages}">1 of 10</span>
+            <a th:href="@{/forum(page=${posts.number + 1}, size=${posts.size}, search=${param.search})}"
+               th:if="${posts.hasNext()}">Next &raquo;</a>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    <span>&copy; 2024 Dark Quarter Corporation. All rights reserved.</span>
+</footer>
+</body>
+</html>
