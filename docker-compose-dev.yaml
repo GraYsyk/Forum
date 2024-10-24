@@ -1,0 +1,12 @@
+name: 'forum-dev'
+services:
+  postgres:
+    image: 'postgres:16.1'
+    env_file:
+      - .env
+    environment:
+      - 'POSTGRES_DB=postgres'
+      - 'POSTGRES_PASSWORD=${DB_PASSWORD}'
+      - 'POSTGRES_USER=postgres'
+    ports:
+      - '5435:5432'
