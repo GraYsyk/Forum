@@ -11,7 +11,10 @@ spring:
     password: ${POSTGRES_PASSWORD}
 
   jpa:
-    show-sql=true: true
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
 
   docker:
     compose:

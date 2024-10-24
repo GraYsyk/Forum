@@ -12,6 +12,13 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        hbm2ddl:
+          auto: validate
+    database: postgresql
+
+  session:
+    jdbc:
+      initialize-schema: always
 
   servlet:
     multipart:
@@ -21,6 +28,7 @@ spring:
 
 server.tomcat.max-http-response-header-size: 1048576
 
-
-
-
+logging:
+  level:
+    root: INFO
+    org.springframework.jdbc.core: INFO
