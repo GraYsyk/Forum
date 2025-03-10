@@ -3,7 +3,7 @@ package net.graysenko.com.ForumDQC.Models;
 import jakarta.persistence.*;
 import net.graysenko.com.ForumDQC.Enums.CommentStatus;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "comments")
@@ -25,13 +25,11 @@ public class Comments {
     @Column(name = "content")
     private String content;
 
-    @Column(name = "created_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date updatedAt;
+    private LocalDateTime updatedAt;
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
@@ -39,7 +37,7 @@ public class Comments {
 
     public Comments() {}
 
-    public Comments(Post post, UserINF user, String content, Date createdAt, Date updatedAt, CommentStatus status) {
+    public Comments(Post post, UserINF user, String content, LocalDateTime createdAt, LocalDateTime updatedAt, CommentStatus status) {
         this.post = post;
         this.user = user;
         this.content = content;
@@ -50,13 +48,13 @@ public class Comments {
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = new Date();
-        this.updatedAt = new Date();
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
     protected void onUpdate() {
-        this.updatedAt = new Date();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public Post getPost() {
@@ -83,19 +81,19 @@ public class Comments {
         this.content = content;
     }
 
-    public Date getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Date getUpdatedAt() {
+    public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(Date updatedAt) {
+    public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
 

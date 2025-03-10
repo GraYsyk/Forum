@@ -48,6 +48,10 @@ public class ForumController {
 
         if (search != null && !search.isEmpty()) {
             posts = postService.findByTitel(search, pageable);
+            if (search.startsWith("#")) {
+                search = "#" + search.substring(1);
+                posts = postService.findByDescription(search, pageable);
+            }
         } else {
             posts = postService.findAll(pageable);
         }
@@ -100,8 +104,9 @@ public class ForumController {
 
         int posts = userService.getUserByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("User was not Found")).getPosts().size();
+        UserINF user = userService.getUserByUsername(userDetails.getUsername()).orElseThrow(() -> new UsernameNotFoundException("User was not Found"));
 
-        model.addAttribute("user", userDetails);
+        model.addAttribute("user", user);
         model.addAttribute("posts", posts);
         return "forum/profile";
     }
@@ -118,7 +123,7 @@ public class ForumController {
 
         if (currentUser.getId() != targetUser.getId()) {
             model.addAttribute("currentUser", currentUser);
-            model.addAttribute("profileUser", targetUser);
+            model.addAttribute("otherUser", targetUser);
             model.addAttribute("totalPosts",targetUser.getPosts().size());
             return "forum/otherProfile";
         }

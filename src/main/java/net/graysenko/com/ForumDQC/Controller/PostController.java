@@ -26,7 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URLConnection;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Controller
@@ -108,7 +108,7 @@ public class PostController {
         UserINF user = userService.getUserByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User was not found"));
 
-        Date date = new Date();
+        LocalDateTime date = LocalDateTime.now();
         Post newPost = new Post(user, title, descr, content, date, date, PostStatus.active);
         postService.save(newPost);
 
@@ -155,12 +155,121 @@ public class PostController {
                              @RequestParam String content,
                              @AuthenticationPrincipal UserDetails userDetails,
                              Model model) {
-        Date date = new Date();
+        LocalDateTime date = LocalDateTime.now();
         Post post = postService.findById(id).orElseThrow(() -> new RuntimeException("Post was not found"));
         UserINF user = userService.getUserByUsername(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("User was not found"));
         Comments comment = new Comments(post, user, content, date, date, CommentStatus.active);
         commentService.saveComment(comment);
         return  "redirect:/post/" + id;
+    }
+
+    @PostMapping("/{id}/delete")
+    public String deletePost(@PathVariable Long id) {
+        Post post = postService.findById(id).orElseThrow(() -> new RuntimeException("Post was not found"));
+        postService.delete(post.getId());
+        return "redirect:/forum/forum";
+    }
+
+    @PostMapping("/{id}/comment/{commentId}/delete")
+    public String deleteComment(@PathVariable Long id, @PathVariable Long commentId) {
+        commentService.deleteComment(commentId);
+        return "redirect:/post/" + id;
+    }
+
+    @GetMapping("/{id}/edit")
+    public String editPostPage(@PathVariable Long id, Model model,
+                           @AuthenticationPrincipal UserDetails userDetails) {
+        Post post = postService.findById(id).orElseThrow(() -> new RuntimeException("Post was not found"));
+        UserINF user = userService.getUserByUsername(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("User was not found"));
+        List<Media> mediaList = mediaService.findByPostId(post.getId());
+        model.addAttribute("post", post);
+        model.addAttribute("user", user);
+        model.addAttribute( "mediaList", mediaList);
+        return "post/editPost";
+    }
+
+    @PostMapping("/edit/{id}")
+    public String editPost(@PathVariable Long id, Model model,
+                           @RequestParam String title,
+                           @RequestParam(required = false) String descr,
+                           @RequestParam String content,
+                           @RequestParam(value = "media", required = false) MultipartFile[] mediaFiles,
+                           @RequestParam(value = "deleteMediaIds", required = false) String deleteMediaIds) {
+
+        final long MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
+
+        Post post = postService.findById(id).orElseThrow(() -> new RuntimeException("Post was not found"));
+
+        if (title == null || title.isEmpty() || content == null || content.isEmpty()) {
+            model.addAttribute("error", "Title and Content cannot be empty.");
+            return "redirect:/post/"+id+"/edit";
+        }
+
+        post.setTitle(title);
+        post.setDescr(descr);
+        post.setContent(content);
+        post.setUpdateDate(LocalDateTime.now());
+        postService.save(post);
+
+        // Обработка удаления медиафайлов
+        if (deleteMediaIds != null && !deleteMediaIds.isEmpty()) {
+            String[] mediaIds = deleteMediaIds.split(",");
+            for (String mediaId : mediaIds) {
+                try {
+                    Long mediaIdLong = Long.parseLong(mediaId);
+
+                    // Используем mediaService вместо mediaRepository
+                    Media media = mediaService.findById(mediaIdLong);
+
+                    // Проверяем, принадлежит ли медиафайл этому посту
+                    if (media != null && media.getPost().getId().equals(id)) {
+                        // Удаляем медиафайл
+                        mediaService.delete(mediaIdLong);
+                    }
+                } catch (NumberFormatException e) {
+                    // Обработка неверного формата ID
+                    model.addAttribute("error", "Invalid media ID format: " + mediaId);
+                } catch (Exception e) {
+                    // Обработка других исключений
+                    model.addAttribute("error", "Error deleting media: " + e.getMessage());
+                }
+            }
+        }
+
+        // Добавление новых медиафайлов
+        if (mediaFiles != null) {
+            for (MultipartFile mediaFile : mediaFiles) {
+                if (!mediaFile.isEmpty()) {
+                    if (mediaFile.getSize() > MAX_FILE_SIZE) {
+                        model.addAttribute("error", "File " + mediaFile.getOriginalFilename() + " is too large. Maximum size is 100 MB.");
+                        return "redirect:/post/"+id+"/edit";
+                    }
+
+                    String contentType = mediaFile.getContentType();
+                    if (contentType == null) {
+                        model.addAttribute("error", "Could not determine the file type for: " + mediaFile.getOriginalFilename());
+                        return "redirect:/post/"+id+"/edit";
+                    }
+
+                    if (contentType.startsWith("image/") || contentType.startsWith("video/")) {
+                        try {
+                            byte[] mediaBytes = mediaFile.getBytes();
+                            Media media = new Media(post, mediaBytes, contentType, mediaFile.getOriginalFilename());
+                            mediaService.save(media);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            model.addAttribute("error", "Error saving file: " + mediaFile.getOriginalFilename());
+                            return "redirect:/post/"+id+"/edit";
+                        }
+                    } else {
+                        model.addAttribute("error", "Unsupported media type: " + contentType + " for file: " + mediaFile.getOriginalFilename());
+                        return "redirect:/post/"+id+"/edit";
+                    }
+                }
+            }
+        }
+
+        return "redirect:/post/" + id;
     }
 }
 

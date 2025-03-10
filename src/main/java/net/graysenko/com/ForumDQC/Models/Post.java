@@ -3,6 +3,8 @@ package net.graysenko.com.ForumDQC.Models;
 import jakarta.persistence.*;
 import net.graysenko.com.ForumDQC.Enums.PostStatus;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -30,11 +32,11 @@ public class Post {
 
     @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date creationDate;
+    private LocalDateTime creationDate;
 
     @Column(name = "updated_at")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date updateDate;
+    private LocalDateTime updateDate;
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
@@ -49,7 +51,7 @@ public class Post {
     public Post() {
     }
 
-    public Post(UserINF ownerId,String title, String descr, String content, Date creationDate, Date updateDate, PostStatus status) {
+    public Post(UserINF ownerId,String title, String descr, String content, LocalDateTime creationDate, LocalDateTime updateDate, PostStatus status) {
         this.owner = ownerId;
         this.title = title;
         this.descr = descr;
@@ -59,15 +61,9 @@ public class Post {
         this.status = status;
     }
 
-    @PrePersist
-    protected void onCreate() {
-        this.creationDate = new Date();
-        this.updateDate = new Date();
-    }
-
     @PreUpdate
     protected void onUpdate() {
-        this.updateDate = new Date();
+        this.updateDate = LocalDateTime.now();
     }
 
     public List<Comments> getComment() {
@@ -118,19 +114,19 @@ public class Post {
         this.content = content;
     }
 
-    public Date getCreationDate() {
+    public LocalDateTime getCreationDate() {
         return creationDate;
     }
 
-    public void setCreationDate(Date creationDate) {
+    public void setCreationDate(LocalDateTime creationDate) {
         this.creationDate = creationDate;
     }
 
-    public Date getUpdateDate() {
+    public LocalDateTime getUpdateDate() {
         return updateDate;
     }
 
-    public void setUpdateDate(Date updateDate) {
+    public void setUpdateDate(LocalDateTime updateDate) {
         this.updateDate = updateDate;
     }
 

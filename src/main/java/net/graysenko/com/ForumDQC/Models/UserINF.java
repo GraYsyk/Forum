@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import net.graysenko.com.ForumDQC.Enums.UserStatus;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -29,7 +30,11 @@ public class UserINF {
 
     @Column(name = "createdat")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
+    private LocalDateTime createdAt;
+
+    @Column(name = "lastActive")
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime lastActive;
 
     @Column(name = "role")
     private String role;
@@ -44,14 +49,16 @@ public class UserINF {
     @Enumerated(EnumType.STRING)
     private UserStatus status;
 
+
     public UserINF() {
     }
 
-    public UserINF(String username, String password, byte[] avatar, Date createdAt, String role, List<Post> posts) {
+    public UserINF(String username, String password, byte[] avatar, LocalDateTime createdAt, LocalDateTime lastActive, String role, List<Post> posts) {
         this.username = username;
         this.password = password;
         this.avatar = avatar;
         this.createdAt = createdAt;
+        this.lastActive = lastActive;
         this.role = role;
         this.posts = posts;
     }
@@ -88,12 +95,20 @@ public class UserINF {
         this.avatar = avatar;
     }
 
-    public Date getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getLastActive() {
+        return lastActive;
+    }
+
+    public void setLastActive(LocalDateTime lastActive) {
+        this.lastActive = lastActive;
     }
 
     public String getRole() {
@@ -126,6 +141,12 @@ public class UserINF {
 
     public void setPosts(List<Post> posts) {
         this.posts = posts;
+    }
+
+    @PreUpdate
+    @PrePersist
+    public void updateLastActive() {
+        this.lastActive = LocalDateTime.now();
     }
 
     @Override

@@ -4,6 +4,7 @@ import net.graysenko.com.ForumDQC.Enums.UserStatus;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Date;
 
@@ -13,11 +14,11 @@ public class CustomUser implements UserDetails {
     private String password;
     private byte[] avatar;
     private Long id;  // Добавим ID
-    private Date createdAt;
+    private LocalDateTime createdAt;
     private UserStatus status;
     private Collection<? extends GrantedAuthority> authorities;
 
-    public CustomUser(String username, String password, byte[] avatar, Long id, Date createdAt, UserStatus status, Collection<? extends GrantedAuthority> authorities) {
+    public CustomUser(String username, String password, byte[] avatar, Long id, LocalDateTime createdAt, UserStatus status, Collection<? extends GrantedAuthority> authorities) {
         this.username = username;
         this.password = password;
         this.avatar = avatar;
@@ -62,11 +63,11 @@ public class CustomUser implements UserDetails {
         return true;
     }
 
-    public Date getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 

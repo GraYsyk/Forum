@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        :root {
+            --primary: #8c5dff;
+            --primary-dark: #6f3fde;
+            --primary-light: #a57fff;
+            --secondary: #2ecc71;
+            --secondary-dark: #27ae60;
+            --bg-dark: #0e0e12;
+            --bg-card: #16161e;
+            --bg-post: #1a1a24;
+            --text: #e0e0e0;
+            --text-muted: #8a8a8a;
+            --border: rgba(255, 255, 255, 0.08);
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #3498db;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        html {
+            height: 100%;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text);
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            background: linear-gradient(-45deg, #13131f, #1a1a2e, #0f0f1a, #16161e);
+            background-size: 400% 400%;
+            background-attachment: fixed;
+            animation: gradientAnimation 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            width: 100%;
+        }
+
+        .admin-container {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background-color: rgba(14, 14, 18, 0.95);
+            border-right: 1px solid var(--border);
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 10;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        .admin-logo i {
+            font-size: 24px;
+            color: var(--primary);
+        }
+
+        .admin-logo span {
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .menu-item {
+            margin-bottom: 5px;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: var(--text-muted);
+            transition: all 0.3s;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .menu-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .menu-link:hover {
+            color: var(--text);
+            background-color: rgba(140, 93, 255, 0.1);
+        }
+
+        .menu-link.active {
+            color: var(--primary);
+            background-color: rgba(140, 93, 255, 0.15);
+            border-left: 3px solid var(--primary);
+        }
+
+        .menu-link.active::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 3px;
+            height: 100%;
+            background-color: var(--primary);
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+            width: calc(100% - 250px);
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .page-title i {
+            color: var(--primary);
+        }
+
+        .admin-user {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .admin-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+        }
+
+        .admin-username {
+            font-weight: 600;
+        }
+
+        .admin-role {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Dashboard Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            border-color: var(--primary);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .stat-title {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+        }
+
+        .icon-users {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+
+        .icon-posts {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+
+        .icon-comments {
+            background: linear-gradient(135deg, #f39c12, #d35400);
+        }
+
+        .icon-views {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 5px;
+        }
+
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            gap: 5px;
+        }
+
+        .trend-up {
+            color: var(--secondary);
+        }
+
+        .trend-down {
+            color: var(--danger);
+        }
+
+        /* Charts Section */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-title i {
+            color: var(--primary);
+        }
+
+        .chart-actions button {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .chart-actions button:hover {
+            background-color: rgba(140, 93, 255, 0.1);
+            color: var(--primary);
+        }
+
+        .chart-container {
+            height: 350px; /* Increase from 250px */
+            position: relative;
+            width: 100%; /* Ensure it takes full width */
+            overflow: hidden; /* Allow chart to overflow if needed */
+        }
+
+        @media screen and (max-width: 992px) {
+            .charts-grid {
+                grid-template-columns: 1fr; /* Stack charts on smaller screens */
+            }
+
+            .chart-container {
+                height: 300px; /* Slightly taller on mobile */
+            }
+        }
+
+        /* Recent Activity Section */
+        .recent-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .recent-card {
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+            height: 100%;
+            animation: fadeIn 0.7s ease-out;
+        }
+
+        .recent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .recent-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .recent-title i {
+            color: var(--primary);
+        }
+
+        .view-all {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .view-all:hover {
+            color: var(--primary-light);
+        }
+
+        /* Recent Posts */
+        .recent-posts {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .post-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: var(--bg-post);
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+
+        .post-item:hover {
+            transform: translateX(5px);
+            border-color: var(--primary);
+        }
+
+        .post-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .post-content {
+            flex: 1;
+        }
+
+        .post-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text);
+        }
+
+        .post-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .post-author {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* New Users */
+        .new-users {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .user-item:hover {
+            background-color: var(--bg-post);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--border);
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .user-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            gap: 4px;
+        }
+
+        .badge-admin {
+            background-color: rgba(140, 93, 255, 0.15);
+            color: var(--primary);
+        }
+
+        .badge-founder {
+            background-color: rgba(255, 93, 189, 0.15);
+            color: #ff5dbd;
+        }
+
+        .badge-active {
+            background-color: rgba(46, 204, 113, 0.15);
+            color: var(--secondary);
+        }
+
+        /* System Status */
+        .system-card {
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+            margin-top: 20px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .system-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .system-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .system-title i {
+            color: var(--info);
+        }
+
+        .system-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .system-item {
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            background-color: var(--bg-post);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .system-label {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .system-label i {
+            font-size: 12px;
+        }
+
+        .system-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        .progress-low {
+            background-color: var(--secondary);
+            width: 25%;
+        }
+
+        .progress-medium {
+            background-color: var(--warning);
+            width: 45%;
+        }
+
+        .progress-high {
+            background-color: var(--danger);
+            width: 75%;
+        }
+
+        .progress-critical {
+            background-color: var(--primary);
+            width: 90%;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-online {
+            background-color: rgba(46, 204, 113, 0.15);
+            color: var(--secondary);
+        }
+
+        .responsive-warning {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: rgba(241, 196, 15, 0.1);
+            border-radius: 8px;
+            border: 1px solid var(--warning);
+            color: var(--warning);
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 992px) {
+            .charts-grid, .recent-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .system-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+                overflow-x: hidden;
+            }
+
+            .sidebar-header {
+                padding: 0 10px 20px;
+                justify-content: center;
+            }
+
+            .admin-logo span {
+                display: none;
+            }
+
+            .menu-link {
+                padding: 12px 0;
+                justify-content: center;
+            }
+
+            .menu-link i {
+                margin-right: 0;
+                font-size: 20px;
+            }
+
+            .menu-link span {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 70px;
+                width: calc(100% - 70px);
+            }
+
+            .responsive-warning {
+                display: block;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .system-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        /* Improved hover states */
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            border-color: var(--primary);
+            animation: pulse 1s infinite;
+        }
+
+        /* Improved sidebar responsiveness */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .menu-toggle {
+                position: fixed;
+                top: 15px;
+                left: 15px;
+                background: var(--primary);
+                color: white;
+                border: none;
+                border-radius: 5px;
+                padding: 8px 12px;
+                z-index: 20;
+                cursor: pointer;
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding-top: 60px;
+            }
+        }
+
+        /* Enhanced chart tooltips */
+        .chart-tooltip {
+            background-color: var(--bg-card) !important;
+            border: 1px solid var(--primary) !important;
+            border-radius: 5px !important;
+            padding: 8px !important;
+            color: var(--text) !important;
+            font-weight: 500 !important;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        /* Improved system status indicators */
+        .system-item:hover {
+            transform: translateY(-3px);
+            transition: transform 0.3s ease;
+            border-color: var(--primary);
+        }
+
+        /* Better focus states for accessibility */
+        a:focus, button:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        /* User status badge pulse for online users */
+        .status-online {
+            animation: pulse 2s infinite;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .modal-content {
+            background-color: var(--bg-card);
+            margin: 10% auto;
+            padding: 0;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            width: 70%;
+            max-width: 800px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--text);
+        }
+
+        .close-modal {
+            color: var(--text-muted);
+            font-size: 24px;
+            font-weight: bold;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .close-modal:hover {
+            color: var(--primary);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .time-filter {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 5px 10px;
+            margin-right: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .time-filter:hover {
+            border-color: var(--primary);
+            color: var(--text);
+        }
+
+        .time-filter.active {
+            background-color: rgba(140, 93, 255, 0.15);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-dark);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+    </style>
+</head>
+<body>
+<button class="menu-toggle" id="menuToggle" style="display: none;">
+    <i class="fas fa-bars"></i>
+</button>
+<div class="admin-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <a href="/forum/forum" class="admin-logo">
+                <i class="fas fa-shield-alt"></i>
+                <span>VARNIX ADMIN</span>
+            </a>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="/admin" class="menu-link active">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/admin/events" class="menu-link">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Events</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/admin/accounts" class="menu-link">
+                    <i class="fas fa-users"></i>
+                    <span>Accounts</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/admin/settings" class="menu-link">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/forum/forum" class="menu-link">
+                    <i class="fas fa-home"></i>
+                    <span>Back to Site</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="admin-header">
+            <h1 class="page-title">
+                <i class="fas fa-tachometer-alt"></i>
+                Dashboard
+            </h1>
+
+            <div class="admin-user">
+                <div>
+                    <div class="admin-username" th:text="${user.username}">Admin User</div>
+                    <div class="admin-role" th:text="${user.status}">Administrator</div>
+                </div>
+                <img th:if="${user.avatar != null}" th:src="@{/forum/avatar/{id}(id=${user.id})}" alt="Admin Avatar" class="admin-avatar">
+                <img th:if="${user.avatar == null}" th:src="@{/avatar.png}" alt="Admin Avatar" class="admin-avatar">
+            </div>
+        </div>
+
+        <div class="responsive-warning">
+            <i class="fas fa-exclamation-triangle"></i> For the best admin experience, please use a larger screen.
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Total Users</div>
+                        <div class="stat-value" th:text="${userCount}">348</div>
+                        <div class="stat-trend trend-up">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>12.5% since last month</span>
+                        </div>
+                    </div>
+                    <div class="stat-icon icon-users">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Total Posts</div>
+                        <div class="stat-value" th:text="${postCount}">1,256</div>
+                        <div class="stat-trend trend-up">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>8.2% since last month</span>
+                        </div>
+                    </div>
+                    <div class="stat-icon icon-posts">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Total Comments</div>
+                        <div class="stat-value" th:text="${commentCount}">5,892</div>
+                        <div class="stat-trend trend-up">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>5.7% since last month</span>
+                        </div>
+                    </div>
+                    <div class="stat-icon icon-comments">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Page Views</div>
+                        <div class="stat-value" th:text="${pageViews}">24,518</div>
+                        <div class="stat-trend trend-up">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>18.3% since last month</span>
+                        </div>
+                    </div>
+                    <div class="stat-icon icon-views">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">
+                        <i class="fas fa-chart-line"></i>
+                        Site Traffic (Last 7 days)
+                    </div>
+                    <div class="chart-actions">
+                        <button class="time-filter active" data-period="week" title="За неделю">7д</button>
+                        <button class="time-filter" data-period="month" title="За месяц">30д</button>
+                        <button class="time-filter" data-period="quarter" title="За квартал">90д</button>
+                        <button class="time-filter" data-period="year" title="За год">1г</button>
+                        <button title="Скачать данные"><i class="fas fa-download"></i></button>
+                        <button title="Обновить данные"><i class="fas fa-sync-alt"></i></button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="trafficChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">
+                        <i class="fas fa-chart-pie"></i>
+                        User Activity Distribution
+                    </div>
+                    <div class="chart-actions">
+                        <button title="Download Data"><i class="fas fa-download"></i></button>
+                        <button title="Refresh Data"><i class="fas fa-sync-alt"></i></button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Section -->
+        <div class="recent-grid">
+            <div class="recent-card">
+                <div class="recent-header">
+                    <div class="recent-title">
+                        <i class="fas fa-file-alt"></i>
+                        Recent Posts
+                    </div>
+                    <a href="/forum/admin/posts" class="view-all">
+                        View All
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+
+                <div class="recent-posts">
+                    <div class="post-item" th:each="post : ${recentPosts}">
+                        <img th:if="${post.owner.avatar != null}" th:src="@{/forum/avatar/{id}(id=${post.owner.id})}" alt="User Avatar" class="post-avatar">
+                        <img th:if="${post.owner.avatar == null}" th:src="@{/avatar.png}" alt="User Avatar" class="post-avatar">
+
+                        <div class="post-content">
+                            <div class="post-title" th:text="${post.title}">Introduction to VARNIX Security Features</div>
+                            <div class="post-details">
+                                <div class="post-author">
+                                    <i class="fas fa-user"></i>
+                                    <span th:text="${post.owner.username}">AdminUser</span>
+                                </div>
+                                <div class="post-time" th:text="${#temporals.format(post.creationDate, 'dd MMM yyyy')}">07 Mar 2025, 14:32</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sample data when no posts are available -->
+                    <div th:if="${recentPosts == 0}" class="post-item">
+                        <img src="/avatar.png" alt="User Avatar" class="post-avatar">
+                        <div class="post-content">
+                            <div class="post-title">Welcome to VARNIX Administration</div>
+                            <div class="post-details">
+                                <div class="post-author">
+                                    <i class="fas fa-user"></i>
+                                    <span>System</span>
+                                </div>
+                                <div class="post-time" th:text="${#dates.format(#dates.createNow(), 'dd MMM yyyy, HH:mm')}">07 Mar 2025, 14:32</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="detailModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 id="detailModalTitle">Детализация</h3>
+                        <button class="close-modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="detail-chart-container" style="height: 300px;">
+                            <canvas id="detailsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="recent-card">
+                <div class="recent-header">
+                    <div class="recent-title">
+                        <i class="fas fa-user-plus"></i>
+                        New Users
+                    </div>
+                    <a href="/forum/admin/users" class="view-all">
+                        View All
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+
+                <div class="new-users">
+                    <div class="user-item" th:each="user : ${newUsers}">
+                        <img th:if="${user.avatar != null}" th:src="@{/forum/avatar/{id}(id=${user.id})}" alt="User Avatar" class="user-avatar">
+                        <img th:if="${user.avatar == null}" th:src="@{/avatar.png}" alt="User Avatar" class="user-avatar">
+
+                        <div class="user-info">
+                            <div class="user-name">
+                                <span th:text="${user.username}">NewUser</span>
+                                <span th:if="${user.role == 'ROLE_ADMIN'}" class="badge badge-admin">
+                                        <i class="fas fa-shield-alt"></i> Admin
+                                    </span>
+                                <span th:if="${user.status == 'FOUNDER'}" class="badge badge-founder">
+                                        <i class="fas fa-crown"></i> Founder
+                                    </span>
+                            </div>
+                            <div class="user-meta">
+                                <span>Joined <span th:text="${#temporals.format(user.createdAt, 'dd MMM yyyy')}">05 Mar 2025</span></span>
+                            </div>
+                        </div>
+
+                        <div class="status-indicator status-online" th:if="${user.lastActive != null && #dates.createNow().getTime() - user.lastActive.getTime() < 900000}">
+                            <i class="fas fa-circle"></i> Online
+                        </div>
+                    </div>
+
+                    <!-- Sample data when no new users are available -->
+                    <div th:if="${newUsers != null || !newUsers.isEmpty()}" class="user-item">
+                        <img src="/avatar.png" alt="User Avatar" class="user-avatar">
+                        <div class="user-info">
+                            <div class="user-name">
+                                <span>No new users</span>
+                            </div>
+                            <div class="user-meta">
+                                <span>Try checking again later</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="system-card">
+            <div class="system-header">
+                <div class="system-title">
+                    <i class="fas fa-server"></i>
+                    System Status
+                </div>
+            </div>
+
+            <!-- System Status -->
+            <div class="system-card">
+                <div class="system-header">
+                    <div class="system-title">
+                        <i class="fas fa-server"></i>
+                        System Status
+                    </div>
+                </div>
+
+                <div class="system-grid">
+                    <div class="system-item">
+                        <div class="system-label">
+                            <i class="fas fa-microchip"></i>
+                            CPU Usage
+                        </div>
+                        <div class="system-value" th:text="${cpuUsage + '%'}">25%</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" th:class="${cpuUsage < 30 ? 'progress-fill progress-low' : (cpuUsage < 60 ? 'progress-fill progress-medium' : (cpuUsage < 80 ? 'progress-fill progress-high' : 'progress-fill progress-critical'))}" th:style="'width: ' + ${cpuUsage} + '%'"></div>
+                        </div>
+                    </div>
+
+                    <div class="system-item">
+                        <div class="system-label">
+                            <i class="fas fa-memory"></i>
+                            Memory Usage
+                        </div>
+                        <div class="system-value" th:text="${memoryUsage + '%'}">45%</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" th:class="${memoryUsage < 30 ? 'progress-fill progress-low' : (memoryUsage < 60 ? 'progress-fill progress-medium' : (memoryUsage < 80 ? 'progress-fill progress-high' : 'progress-fill progress-critical'))}" th:style="'width: ' + ${memoryUsage} + '%'"></div>
+                        </div>
+                    </div>
+
+                    <div class="system-item">
+                        <div class="system-label">
+                            <i class="fas fa-hdd"></i>
+                            Disk Usage
+                        </div>
+                        <div class="system-value" th:text="${diskUsage + '%'}">75%</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" th:class="${diskUsage < 30 ? 'progress-fill progress-low' : (diskUsage < 60 ? 'progress-fill progress-medium' : (diskUsage < 80 ? 'progress-fill progress-high' : 'progress-fill progress-critical'))}" th:style="'width: ' + ${diskUsage} + '%'"></div>
+                        </div>
+                    </div>
+
+                    <div class="system-item">
+                        <div class="system-label">
+                            <i class="fas fa-tachometer-alt"></i>
+                            Network
+                        </div>
+                        <div class="system-value" th:text="${networkSpeed}">90 Mbps</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill progress-medium"></div>
+                        </div>
+                    </div>
+
+                    <div class="system-item">
+                        <div class="system-label">
+                            <i class="fas fa-thermometer-half"></i>
+                            Server Temp
+                        </div>
+                        <div class="system-value">45°C</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill progress-medium" style="width: 50%"></div>
+                        </div>
+                    </div>
+
+                    <div class="system-item">
+                        <div class="system-label">
+                            <i class="fas fa-clock"></i>
+                            Uptime
+                        </div>
+                        <div class="system-value" th:text="${uptime}">15d 7h 23m</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Mobile menu toggle functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.querySelector('.sidebar');
+
+        // Show toggle button only on mobile
+        function checkMobile() {
+            if (window.innerWidth <= 768) {
+                menuToggle.style.display = 'block';
+            } else {
+                menuToggle.style.display = 'none';
+                sidebar.classList.remove('active');
+            }
+        }
+
+        // Toggle sidebar on button click
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+        });
+
+        // Check on load and resize
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+
+        // Enhanced chart configurations
+        if (window.Chart) {
+            // Set global chart options for better readability
+            Chart.defaults.color = 'rgba(255, 255, 255, 0.7)';
+            Chart.defaults.font.family = "'Inter', 'Segoe UI', sans-serif";
+
+            // Add tooltips styling
+            Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(22, 22, 30, 0.9)';
+            Chart.defaults.plugins.tooltip.borderColor = 'rgba(140, 93, 255, 0.8)';
+            Chart.defaults.plugins.tooltip.borderWidth = 1;
+            Chart.defaults.plugins.tooltip.padding = 10;
+            Chart.defaults.plugins.tooltip.cornerRadius = 6;
+            Chart.defaults.plugins.tooltip.displayColors = true;
+            Chart.defaults.plugins.tooltip.titleFont = {
+                weight: 'bold',
+                size: 14
+            };
+        }
+
+        // Add animation classes to elements
+        const statCards = document.querySelectorAll('.stat-card');
+        statCards.forEach((card, index) => {
+            card.style.animationDelay = (index * 0.1) + 's';
+        });
+
+        // Add staggered animations to recent posts
+        const postItems = document.querySelectorAll('.post-item');
+        postItems.forEach((post, index) => {
+            post.style.animationName = 'slideIn';
+            post.style.animationDuration = '0.5s';
+            post.style.animationDelay = (index * 0.1) + 's';
+            post.style.animationFillMode = 'both';
+        });
+
+        // Add pulse animation to system indicators that are near critical
+        const highUsageIndicators = document.querySelectorAll('.progress-high, .progress-critical');
+        highUsageIndicators.forEach(indicator => {
+            indicator.parentElement.parentElement.classList.add('pulse-warning');
+            indicator.parentElement.parentElement.style.animation = 'pulse 2s infinite';
+        });
+    });
+
+    // Extend the existing chart initialization code
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize charts with empty data first
+        const trafficChartCtx = document.getElementById('trafficChart').getContext('2d');
+        const activityChartCtx = document.getElementById('activityChart').getContext('2d');
+
+        // Create chart configurations with empty data
+        const trafficChartConfig = {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Page Views',
+                        data: [],
+                        backgroundColor: 'rgba(140, 93, 255, 0.2)',
+                        borderColor: 'rgba(140, 93, 255, 1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true,
+                        pointBackgroundColor: 'rgba(140, 93, 255, 1)',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    },
+                    {
+                        label: 'Unique Visitors',
+                        data: [],
+                        backgroundColor: 'rgba(46, 204, 113, 0.2)',
+                        borderColor: 'rgba(46, 204, 113, 1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true,
+                        pointBackgroundColor: 'rgba(46, 204, 113, 1)',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }
+                ]
+            },
+            // Your existing options...
+            options: { /* your existing options */ }
+        };
+
+        const activityChartConfig = {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: [],
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    borderWidth: 2,
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                radius: '100%',
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        };
+
+        // Initialize the charts with empty data
+        const trafficChart = new Chart(trafficChartCtx, trafficChartConfig);
+        const activityChart = new Chart(activityChartCtx, activityChartConfig);
+
+        // Make these available globally for the period update functions
+        window.trafficChart = trafficChart;
+        window.activityChart = activityChart;
+
+        // Load initial data (one week by default)
+        updateChartsByPeriod('week');
+
+        // Дополнительные графики и анимации...
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+        // Основные графики из предыдущего кода...
+
+        // Добавляем переключатели периодов времени
+        const timeFilters = document.querySelectorAll('.time-filter');
+        if (timeFilters.length) {
+            timeFilters.forEach(filter => {
+                filter.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    // Удаляем активный класс у всех фильтров
+                    timeFilters.forEach(f => f.classList.remove('active'));
+
+                    // Добавляем активный класс текущему фильтру
+                    this.classList.add('active');
+
+                    // Получаем период из атрибута data-period
+                    const period = this.getAttribute('data-period');
+
+                    // Обновляем данные в зависимости от выбранного периода
+                    updateChartsByPeriod(period);
+                });
+            });
+        }
+
+        // Функция для обновления графиков в зависимости от выбранного периода
+        function updateChartsByPeriod(period) {
+            // Show loading indicator if needed
+
+            // Fetch data from your REST endpoint
+            fetch(`/info/stats?period=${period}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Update traffic chart
+                    window.trafficChart.data.labels = data.trafficDates;
+                    window.trafficChart.data.datasets[0].data = data.pageViewsData;
+                    window.trafficChart.data.datasets[1].data = data.uniqueVisitorsData;
+                    window.trafficChart.update();
+
+                    // Update activity chart
+                    window.activityChart.data.labels = data.activityLabels;
+                    window.activityChart.data.datasets[0].data = data.activityData;
+                    window.activityChart.data.datasets[0].backgroundColor = data.activityColors;
+                    window.activityChart.update();
+
+                    // Update chart title if needed
+                    const chartTitle = document.querySelector('.chart-title');
+                    if (chartTitle) {
+                        const periodText = {
+                            'week': '(Last 7 days)',
+                            'month': '(Last 30 days)',
+                            'quarter': '(Last 90 days)',
+                            'year': '(Last Year)'
+                        }[period] || '(Last 7 days)';
+
+                        // Update only the period part of the title
+                        chartTitle.innerHTML = `<i class="fas fa-chart-line"></i> Site Traffic ${periodText}`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching chart data:', error);
+                    // Display user-friendly error message if needed
+                });
+        }
+
+        // Добавляем интерактивность для графика активности пользователей
+        document.getElementById('activityChart').addEventListener('click', function(evt) {
+            const activePoints = activityChart.getElementsAtEventForMode(
+                evt, 'nearest', { intersect: true }, false
+            );
+
+            if (activePoints.length) {
+                const firstPoint = activePoints[0];
+                const label = activityChart.data.labels[firstPoint.index];
+                const value = activityChart.data.datasets[0].data[firstPoint.index];
+
+                // В зависимости от выбранного сегмента, показываем подробную информацию
+                // Например, если выбрали "Посты", можно показать детализацию по категориям постов
+                showDetailedActivityData(label, value);
+            }
+        });
+
+        // Функция для отображения детализированных данных активности
+        function showDetailedActivityData(category, value) {
+            // Отображаем модальное окно или обновляем другой график
+            const modal = document.getElementById('detailModal');
+            if (modal) {
+                document.getElementById('detailModalTitle').textContent = `Детализация: ${category}`;
+
+                // Загружаем детализированные данные с сервера
+                fetch(`/info/activity-details?category=${encodeURIComponent(category)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Создаем новый график с детализацией
+                        const detailsChartCtx = document.getElementById('detailsChart').getContext('2d');
+
+                        if (window.detailsChart) {
+                            window.detailsChart.destroy();
+                        }
+
+                        window.detailsChart = new Chart(detailsChartCtx, {
+                            type: 'bar',
+                            data: {
+                                labels: data.labels,
+                                datasets: [{
+                                    label: category,
+                                    data: data.values,
+                                    backgroundColor: data.colors || 'rgba(140, 93, 255, 0.7)',
+                                    borderColor: 'rgba(140, 93, 255, 1)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        });
+
+                        // Показываем модальное окно
+                        modal.style.display = 'block';
+                    })
+                    .catch(error => {
+                        console.error('Error fetching detailed data:', error);
+                    });
+            }
+        }
+
+        // Закрытие модального окна
+        const closeButtons = document.querySelectorAll('.close-modal');
+        if (closeButtons.length) {
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const modal = document.getElementById('detailModal');
+                    if (modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+</script>
+</body>
+</html>

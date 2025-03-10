@@ -31,6 +31,11 @@ public class MediaService {
     }
 
     @Transactional
+    public void delete(Long id) {
+        mediaRepository.deleteById(id);
+    }
+
+    @Transactional
     public void save(Media media) {
         mediaRepository.save(media);
     }

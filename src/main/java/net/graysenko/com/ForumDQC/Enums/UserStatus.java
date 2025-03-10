@@ -7,4 +7,5 @@ public enum UserStatus {
     creator,
     Super,
     CEO,
+    Founder
 }

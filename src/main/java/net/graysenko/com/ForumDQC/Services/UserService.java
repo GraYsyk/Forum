@@ -10,9 +10,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -37,9 +37,40 @@ public class UserService implements UserDetailsService {
         return (user != null) ? user.getAvatar() : null;
     }
 
+    public List<UserINF> getAllUsers() {
+        return userinfRepository.findAll();
+    }
+
     public void saveUser(UserINF user) {
         userinfRepository.save(user);
     }
+
+    public List<UserINF> getNewUsers() {
+        List<UserINF> users = userinfRepository.findAll();
+
+        LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3); // Текущая дата минус 3 дня
+
+        return users.stream()
+                .filter(user -> user != null && user.getCreatedAt().isAfter(threeDaysAgo))
+                .sorted(Comparator.comparing(UserINF::getCreatedAt).reversed())
+                .collect(Collectors.toList());
+    }
+
+    public List<UserINF> getRecentUsers() {
+        List<UserINF> users = userinfRepository.findAll();
+        LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1); // Текущая дата минус 3 дня
+        return users.stream()
+                .filter(user -> user != null && user.getLastActive().isAfter(oneDayAgo))
+                .sorted(Comparator.comparing(UserINF::getLastActive).reversed())
+                .collect(Collectors.toList());
+    }
+
+    public void updateLastActive(UserINF user) {
+        user.setLastActive(LocalDateTime.now());
+        userinfRepository.save(user);
+    }
+
+
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
